@@ -15,16 +15,17 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
 
-public class MainActivity2 extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener {
+public class MainActivity2 extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemSelectedListener {
 
-    Button otrosaludo, agregar, despliega;
+    Button otrosaludo, agregar, desplegar;
     EditText edita1, edita2;
     Spinner combo;
     TextView vista;
 
     Arreglito arreglito = new Arreglito();
     ArrayList<Clasesita> aRegresar = arreglito.aRegresar();
-
+    String cadenitas[] = {"selecciona", "pulseras", "cadenas"};
+    String opcionSeleccionada = "selecciona";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,105 +33,92 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main2);
 
-        String cadenitas[]= {"selecciona", "pulseras", "cadenas"};
-        ArrayAdapter adaptadito;
-
-        otrosaludo =  findViewById(R.id.otrosaludo);
+        otrosaludo = findViewById(R.id.otrosaludo);
         otrosaludo.setOnClickListener(this);
 
+        agregar = findViewById(R.id.agregar);
+        agregar.setOnClickListener(this);
+
+        desplegar = findViewById(R.id.desplegar);
+        desplegar.setOnClickListener(this);
+
+        edita1 = findViewById(R.id.edit1);
+        edita2 = findViewById(R.id.edit2);
         vista = findViewById(R.id.vista);
 
         combo = findViewById(R.id.combo);
-        combo.setOnItemClickListener(this);
+        ArrayAdapter<String> adaptadito = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, cadenitas);
+        adaptadito.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
+        combo.setAdapter(adaptadito);
+        combo.setOnItemSelectedListener(this);
     }
 
     @Override
     public void onClick(View v) {
-        String cadenita = ((Button)v).getText().toString();
+        String cadenita = ((Button) v).getText().toString();
 
-        if (cadenita.equals("otro saludo")){
+        if (cadenita.equals("otro saludo")) {
             Saludito otrosal = new Saludito();
-            Toast.makeText(this,otrosal.otrosaludo(), Toast.LENGTH_SHORT).show();
-        }else
-        if(cadenita.equals("pulseras")){
-            Clasesita objetito = new Clasesita();
-            objetito.setTipo("pulserita");
-            objetito.setCantidad(Integer.parseInt(edita1.getText().toString()));
-            objetito.setCosto(Integer.parseInt(edita2.getText().toString()));
-            arreglito.agregar(objetito);
-        }
-        else
-        if(cadenita.equals("cadenas")){
-            Clasesita objetito = new Clasesita();
-            objetito.setTipo("cadenitas");
-            objetito.setCantidad(Integer.parseInt(edita1.getText().toString()));
-            objetito.setCosto(Integer.parseInt(edita2.getText().toString()));
-            arreglito.agregar(objetito);
-        }
-        else
-        if (cadenita.equals("desplegar")){
-            Clasesita objetito = new Clasesita();
+            Toast.makeText(this, otrosal.otrosaludo(), Toast.LENGTH_SHORT).show();
+        } else if (cadenita.equals("agregar")) {
+            if (opcionSeleccionada.equals("selecciona")) {
+                Toast.makeText(this, "Selecciona pulseras o cadenas", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String cantidadTexto = edita1.getText().toString();
+            String costoTexto = edita2.getText().toString();
+
+            if (cantidadTexto.isEmpty() || costoTexto.isEmpty()) {
+                Toast.makeText(this, "Escribe la cantidad y el costo", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            try {
+                int cantidad = Integer.parseInt(cantidadTexto);
+                int costo = Integer.parseInt(costoTexto);
+
+                Clasesita objetito = new Clasesita();
+                objetito.setTipo(opcionSeleccionada);
+                objetito.setCantidad(cantidad);
+                objetito.setCosto(costo);
+                arreglito.agregar(objetito);
+
+                edita1.setText("");
+                edita2.setText("");
+                Toast.makeText(this, "Artículo guardado", Toast.LENGTH_SHORT).show();
+            } catch (NumberFormatException exception) {
+                Toast.makeText(this, "Solo números en cantidad y costo", Toast.LENGTH_SHORT).show();
+            }
+        } else if (cadenita.equals("desplegar")) {
             aRegresar = arreglito.aRegresar();
             String cadenota = "";
             int total = 0;
             int cuantas = aRegresar.size();
-            for (int i = 0; i < cuantas; i++){
 
-                cadenota += aRegresar.get(i).getTipo() + "\t"
-                        + aRegresar.get(i).getCantidad() + "\t"
-                        + aRegresar.get(i).getCosto();
+            for (int i = 0; i < cuantas; i++) {
+                cadenota += aRegresar.get(i).getTipo() + "\t" +
+                        aRegresar.get(i).getCantidad() + "\t" +
+                        aRegresar.get(i).getCosto() + "\n";
                 total += aRegresar.get(i).getCosto();
             }
-            cadenota = cadenota + "\n" + total;
 
+            if (cuantas > 0) {
+                cadenota = cadenota + "Total:\t" + total;
+            }
 
+            vista.setText(cadenota);
         }
-
     }
+
     @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        String cadenita = combo.getOnItemSelectedListener().toString();
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        opcionSeleccionada = parent.getItemAtPosition(position).toString();
+    }
 
-        if(cadenita.equals("otro saludo") || cadenita.equals("agregar") || cadenita.equals("pulseras") || cadenita.equals("cadenas") || cadenita.equals("agregar") || cadenita.equals("desplegar")){
-            if (cadenita.equals("otro saludo")){
-                Saludito otrosal = new Saludito();
-                Toast.makeText(this,otrosal.otrosaludo(), Toast.LENGTH_SHORT).show();
-            }else
-            if(cadenita.equals("pulseras")){
-                Clasesita objetito = new Clasesita();
-                objetito.setTipo("pulserita");
-                objetito.setCantidad(Integer.parseInt(edita1.getText().toString()));
-                objetito.setCosto(Integer.parseInt(edita2.getText().toString()));
-                arreglito.agregar(objetito);
-            }
-            else
-            if(cadenita.equals("cadenas")){
-                Clasesita objetito = new Clasesita();
-                objetito.setTipo("pulserita");
-                objetito.setCantidad(Integer.parseInt(edita1.getText().toString()));
-                objetito.setCosto(Integer.parseInt(edita2.getText().toString()));
-                arreglito.agregar(objetito);
-            }
-
-            else
-            if (cadenita.equals("desplegar")){
-                Clasesita objetito = new Clasesita();
-                aRegresar = arreglito.aRegresar();
-                String cadenota = "";
-                int total = 0;
-                int cuantas = aRegresar.size();
-                for (int i = 0; i < cuantas; i++){
-
-                    cadenota += aRegresar.get(i).getTipo() +
-                            "\t" + aRegresar.get(i).getCantidad() +
-                            "\t" + aRegresar.get(i).getCosto();
-                    total += aRegresar.get(i).getCosto();
-                }
-                cadenota = cadenota + "\n" + total;
-            }
-        }
-
-
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+        opcionSeleccionada = "selecciona";
     }
 }
